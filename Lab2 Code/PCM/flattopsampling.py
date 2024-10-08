@@ -13,7 +13,7 @@ sampled_signal = analog_signal[sample_points]
 # Create figure and subplots
 plt.figure(figsize=(12, 4))
 
-# Flat-Top Sampling (c): Flat horizontal bars holding sample value constant with vertical bars
+# Flat-Top Sampling (c)
 plt.plot(t, analog_signal, 'k--', label='Analog signal')  # Original analog signal
 for i in range(len(sample_points) - 1):
     # Define the length of the horizontal lines (flat-top)

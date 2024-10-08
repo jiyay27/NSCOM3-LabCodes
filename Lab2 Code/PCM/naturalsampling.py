@@ -13,7 +13,7 @@ sampled_signal = analog_signal[sample_points]
 # Create figure and subplots
 plt.figure(figsize=(12, 4))
 
-# Natural Sampling (b): Follow the waveform between sample points (stair-step) and show vertical bars
+# Natural Sampling (b)
 plt.plot(t, analog_signal, 'k--', label='Analog signal')  # Original analog signal
 for i in range(len(sample_points) - 1):
     # For natural sampling, draw the sampled waveform between consecutive sample points

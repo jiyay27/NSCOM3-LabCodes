@@ -13,7 +13,7 @@ sampled_signal = analog_signal[sample_points]
 # Create figure and subplots
 plt.figure(figsize=(12, 4))
 
-# Ideal Sampling (a): Impulse-like samples
+# Ideal Sampling (a)
 plt.plot(t, analog_signal, 'k--', label='Analog signal')  # Original analog signal
 plt.stem(t[sample_points], sampled_signal, linefmt='magenta', markerfmt='ro', basefmt=' ')  # Sampled points as impulses
 plt.title('a. Ideal Sampling')
