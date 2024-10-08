@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Binary data to encode
-data = [1, 0, 1, 1, 0, 0, 1, 0]
+data = [0,1,0,0,1,1]
 
 # Parameters for the signal
 bit_duration = 1  # duration of each bit
@@ -17,13 +17,13 @@ manchester_signal = np.zeros(sampling_rate * len(data))
 
 for i, bit in enumerate(data):
     if bit == 1:
-        # '1' is high-to-low transition (first half high, second half low)
-        manchester_signal[i * sampling_rate: i * sampling_rate + samples_per_bit] = 1
-        manchester_signal[i * sampling_rate + samples_per_bit: (i + 1) * sampling_rate] = -1
-    elif bit == 0:
-        # '0' is low-to-high transition (first half low, second half high)
+        # '1' is low-to-high transition (first half low, second half high)
         manchester_signal[i * sampling_rate: i * sampling_rate + samples_per_bit] = -1
         manchester_signal[i * sampling_rate + samples_per_bit: (i + 1) * sampling_rate] = 1
+    elif bit == 0:
+        # '0' is high-to-low transition (first half high, second half low)
+        manchester_signal[i * sampling_rate: i * sampling_rate + samples_per_bit] = 1
+        manchester_signal[i * sampling_rate + samples_per_bit: (i + 1) * sampling_rate] = -1
 
 # Differential Manchester Encoding
 differential_manchester_signal = np.zeros(sampling_rate * len(data))
