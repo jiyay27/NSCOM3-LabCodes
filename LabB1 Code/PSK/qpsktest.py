@@ -1,136 +1,150 @@
-
-import matplotlib.pyplot as plt
 import numpy as np
-from math import sqrt
-import random
+import matplotlib.pyplot as plt
 
-t = np.linspace(0,1,100)  # Time
-tb = 1;
-fc = 1;    # carrier frequency
+# Define parameters
+bit_sequence = [0, 1, 0, 1]
+bit_sequence_2 = [0, 0, 1, 1]
+bit_rate = 5  # Bit rate in bits per second (Hz)
+cycles_per_bit = 4  # Number of carrier wave cycles per bit
+carrier_frequency = bit_rate * cycles_per_bit  # Carrier frequency in Hz
 
-c1 = sqrt(2/tb)*np.cos(2*np.pi*fc*t)  # carrier frequency cosine wave
-c2 = sqrt(2/tb)*np.sin(2*np.pi*fc*t)  # carrier frequency sine wave
+# Calculate the total number of samples and time vector
+total_time = len(bit_sequence) / bit_rate  # Total time in seconds
+samples_per_bit = 500 // len(bit_sequence)
+time = np.linspace(0, total_time, samples_per_bit * len(bit_sequence))  # Full time vector
 
-fig, ax1 = plt.subplots()
+# Initialize signals
+signal_1 = np.zeros(len(time))
+modulated_signal_1 = np.zeros(len(time))
 
-ax1.plot(t, c1)
-ax1.grid()
-ax1.set_xlabel('Time (Number of samples)')
-ax1.set_ylabel('Cos Wave')
-plt.title('Generation of Carrier Wave 1')
-plt.show()
+# Carrier signal for the entire duration (completes integer cycles per bit)
+carrier_signal_1 = np.sin(2 * np.pi * carrier_frequency * time)
 
-fig, ax2 = plt.subplots()
-ax2.plot(t, c2)
-ax2.grid()
-ax2.set_xlabel('Time (Number of samples)')
-ax2.set_ylabel('Sine Wave')
-plt.title('Generation of Carrier Wave 2')
-plt.show()
+# Initialize signals
+signal_2 = np.zeros(len(time))
+modulated_signal_2 = np.zeros(len(time))
 
+# Carrier signal for the entire duration (completes integer cycles per bit)
+carrier_signal_2 = np.sin(2 * np.pi * carrier_frequency * time)
 
-m = []
-t1 = 0;
-t2 = tb;
-for i in range(16):
-    m.append(random.uniform(0,1))   # message signal (binary)
-    print(m[i])
+# Fill signal_1 and modulated_signal_1 based on bit_sequence
+for i, bit in enumerate(bit_sequence):
+    start_index = i * samples_per_bit
+    end_index = (i + 1) * samples_per_bit
 
+    # Apply the 90-degree phase shift to the entire sequence
+    modulated_signal_1[start_index:end_index] = np.sin(2 * np.pi * carrier_frequency * time[start_index:end_index] + np.pi)
 
-## modulation
+    # Further phase adjustment based on the bit value
+    if bit == 1:
+        # Apply an additional 180-degree phase shift for bit 1
+        modulated_signal_1[start_index:end_index] = np.sin(2 * np.pi * carrier_frequency * time[start_index:end_index] + np.pi/2 + np.pi + 1.5)
+    # No need to do anything special for bit 0, as it's already set with the 90-degree shift
 
-odd_sig = np.zeros((16,100))
-even_sig = np.zeros((16,100))
-fig, ax4 = plt.subplots()
-for i in range(0,15,2):
-    t = np.linspace(t1,t2,100)
-    if (m[i]>0.5):
-        m[i] = 1
-        m_s = np.ones((1,len(t)))
-    else:
-        m[i] = 0
-        m_s = (-1)*np.ones((1,len(t)))
+    # Set the binary signal for this bit
+    signal_1[start_index:end_index] = bit
 
-    odd_sig[i,:] = c1*m_s
+# Fill signal_2 and modulated_signal_2 based on bit_sequence
+for i, bit in enumerate(bit_sequence_2):
+    start_index = i * samples_per_bit
+    end_index = (i + 1) * samples_per_bit
+    
+    # Apply the 90-degree phase shift to the entire sequence
+    modulated_signal_2[start_index:end_index] = np.sin(2 * np.pi * carrier_frequency * time[start_index:end_index] + np.pi)
 
-    if (m[i+1]>0.5):
-        m[i+1] = 1
-        m_s = np.ones((1,len(t)))
-    else:
-        m[i+1] = 0
-        m_s = (-1)*np.ones((1,len(t)))
+    # Further phase adjustment based on the bit value
+    if bit == 1:
+        # Apply an additional 180-degree phase shift for bit 1
+        modulated_signal_2[start_index:end_index] = np.sin(2 * np.pi * carrier_frequency * time[start_index:end_index] + np.pi/2 + np.pi + 1.5)
+    # No need to do anything special for bit 0, as it's already set with the 90-degree shift
 
-    even_sig[i,:] = c2*m_s
-
-    qpsk = odd_sig + even_sig   # modulated wave = oddbits + evenbits
-
-    ax4.plot(t,qpsk[i,:])
-    t1 = t1 + (tb+0.01)
-    t2 = t2 + (tb+0.01)
-
-ax4.grid()
-plt.title('Modulated Wave')
-plt.show()
-
-
-fig, ax3 = plt.subplots()
-ax3.stem(range(16), m,use_line_collection=True)
-ax3.grid()
-ax3.set_ylabel('16 bits data')
-plt.title('Generation of message signal (Binary)')
-plt.show()
-
-## noise
-
-
-noise = np.random.normal(0, 0.1, [16,100]) # noise using random function
-
-channel = noise + qpsk    # adding noise to qpsk modulated wave
-
-fig, ax5 = plt.subplots()
-for i in range(0,15,1):
-       ax5.plot(t,channel[i,:])
-
-ax5.grid()
-plt.title('Noise signal which gets added to modulated wave')
-plt.show()
+    # Set the binary signal for this bit
+    signal_2[start_index:end_index] = bit
 
 
 
+# Create the subplots grid: 6 rows and 1 column for 6 different graphs
+fig, axes = plt.subplots(7, 1, figsize=(10, 12), sharex=True)
 
-## demodulation
+# Define bit boundaries for x-axis ticks
+bit_boundaries = np.linspace(0, total_time, len(bit_sequence) + 1)
+
+# Plot the binary signal in the first subplot
+axes[0].plot(time, signal_1, color='red', lw=3, label="First Binary Signal")
+axes[0].set_ylim([-1.5, 1.5])
+axes[0].legend(loc='lower left')
+axes[0].grid(True)
+
+# Add vertical lines at bit boundaries for better alignment with grid
+for boundary in bit_boundaries:
+    axes[0].axvline(boundary, color='gray', linestyle='--')
+
+# Plot the carrier signal in the middle (second subplot)
+axes[1].plot(time, carrier_signal_1, color='black', lw=1.5, label="Carrier Signal", alpha=0.7)
+axes[1].set_ylim([-1.5, 1.5])
+axes[1].legend(loc='lower left')
+axes[1].grid(True)
+
+# Add vertical lines at bit boundaries
+for boundary in bit_boundaries:
+    axes[1].axvline(boundary, color='gray', linestyle='--')
+
+# Plot the modulated signal in the third subplot
+axes[2].plot(time, modulated_signal_1, color='cyan', lw=2, label="Modulated Signal")
+axes[2].set_ylim([-1.5, 1.5])
+axes[2].legend(loc='lower left')
+axes[2].grid(True)
+
+# Add vertical lines at bit boundaries
+for boundary in bit_boundaries:
+    axes[2].axvline(boundary, color='gray', linestyle='--')
+
+#
+axes[3].plot(time, signal_2, color='red', lw=3, label="Second Binary Signal")
+axes[3].set_ylim([-1.5, 1.5])
+axes[3].legend(loc='lower left')
+axes[3].grid(True)
+    
+# Add vertical lines at bit boundaries
+for boundary in bit_boundaries:
+    axes[3].axvline(boundary, color='gray', linestyle='--')
+
+axes[4].plot(time, carrier_signal_2, color='black', lw=1.5, label="Second Carrier Signal", alpha=0.7)
+axes[4].set_ylim([-1.5, 1.5])
+axes[4].legend(loc='lower left')
+axes[4].grid(True)
+    
+# Add vertical lines at bit boundaries
+for boundary in bit_boundaries:
+    axes[4].axvline(boundary, color='gray', linestyle='--')
+
+axes[5].plot(time, modulated_signal_2, color='cyan', lw=1.5, label="Second Modulated Signal")
+axes[5].set_ylim([-1.5, 1.5])
+axes[5].legend(loc='lower left')
+axes[5].grid(True)
+    
+# Add vertical lines at bit boundaries
+for boundary in bit_boundaries:
+    axes[5].axvline(boundary, color='gray', linestyle='--')
 
 
-t1 = 0
-t2 = tb
 
-demod = np.zeros((16,1))    # demodulated signal  (demodulation of noise + qpsk modulated wave)
+sum_signal = modulated_signal_1 + modulated_signal_2
 
-for i in range(0,15,1):
-    t = np.linspace(t1,t2,100)
-    x1 = sum(c1*channel[i,:])
-    x2 = sum(c2*channel[i,:])
+axes[6].plot(time, sum_signal, lw=1.5, label="Sum Signal")
+axes[6].set_ylim([-1.5, 1.5])
+axes[6].legend(loc='lower left')
+axes[6].grid(True)
+    
+# Add vertical lines at bit boundaries
+for boundary in bit_boundaries:
+    axes[6].axvline(boundary, color='gray', linestyle='--')
 
-    if(x1>0 and x2>0):
-        demod[i] = 1
-        demod[i+1] = 1
-    elif (x1>0 and x2<0):
-        demod[i] = 1
-        demod[i+1] = 0
-    elif (x1<0 and x2<0):
-        demod[i] = 0
-        demod[i+1] = 0
-    elif (x1<0 and x2>0):
-        demod[i] = 0
-        demod[i+1] = 1
+# Set the x-ticks at bit boundaries to make sure the grid aligns with bits
+axes[-1].set_xticks(bit_boundaries)
 
-    t1 = t1 + (tb+0.01)
-    t2 = t2 + (tb+0.01)
+# Formatting the plot
+axes[-1].set_xlabel('Time (s)')
 
-
-fig, ax6 = plt.subplots()
-ax6.stem(range(16), demod,use_line_collection=True)
-ax6.grid()
-ax6.set_ylabel('16 bits data')
-plt.title('Demodulated signal')
+plt.tight_layout()
 plt.show()
