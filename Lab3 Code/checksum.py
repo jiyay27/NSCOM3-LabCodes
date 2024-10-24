@@ -6,38 +6,36 @@ def calculate_checksum(message):
         print(f"Character: {char}, ASCII: {ascii_value}")
         checksum += ascii_value
 
-        
         if checksum > 255:
-            checksum = (checksum & 0xFF) + (checksum >> 8) 
-        print(f"Current Sum (before processing): {checksum}")
+            checksum = (checksum & 0xFF) + (checksum >> 8)
+        # print(f"Current Sum: {checksum}")
 
-        
-        binary_value = bin(checksum)[2:].zfill(8)  
-        msb = binary_value[:2]  
-        rest = binary_value[2:]
+    binary_value = bin(checksum)[2:].zfill(8)
+    print(f"Binary before MSB and LSB extraction: {binary_value}")
 
-       
-        updated_binary_value = bin(int(rest, 2) + int(msb, 2))[2:].zfill(6)
-        print(f"Binary before complement: {updated_binary_value}")
+    msb = binary_value[:4]  
+    lsb = binary_value[4:] 
 
-     
-        complemented_value = ''.join('1' if bit == '0' else '0' for bit in updated_binary_value)
-        checksum = int(complemented_value, 2)
-        print(f"Final Checksum (after complement): {checksum}")
+    summed_value = (int(msb, 2) + int(lsb, 2)) & 0xF  
+    updated_binary_value = bin(summed_value)[2:].zfill(4)  
+    print(f"Binary after MSB + LSB addition: {updated_binary_value}")
+
+    complemented_value = ''.join('1' if bit == '0' else '0' for bit in updated_binary_value)
+    checksum = int(complemented_value, 2)
+    print(f"Binary Complement: {complemented_value} == {checksum}")
 
     return checksum
 
 def validate_checksum(message, received_checksum):
     recalculated_checksum = calculate_checksum(message)
+
     total = (recalculated_checksum + received_checksum) & 0xFF
 
-    
+    print(f"Validation Sum: {total}")
+
     return total == 0
 
-
-word = "NSCOM03"
+word = "PKA_NSCOM03"
 checksum_sender = calculate_checksum(word)
-is_valid = validate_checksum(word, checksum_sender)
 
-print("\nFinal Checksum (Sender):", checksum_sender)
-print("Is the checksum valid at receiver:", is_valid)
+print("\nFinal Checksum:", checksum_sender)
